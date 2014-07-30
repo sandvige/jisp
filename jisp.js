@@ -1,30 +1,30 @@
 Array.prototype.toString = function() {
-	return '(' + this.join(' ') + ')';
+    return '(' + this.join(' ') + ')';
 };
 
 function pushEnv(env) {
-    var newEnv = function() {};
+    var newEnv = function() { };
     newEnv.prototype = env;
     return new newEnv;
 };
 
 function evaluate(expr, env) {
     env = pushEnv(env);
-    if (typeof(expr) === 'string') {
+    if (typeof (expr) === 'string') {
         var value;
         if (!isNaN((value = parseFloat(expr))))
-            return [ value, env ];
+            return [value, env];
 
         if (expr === 'true')
-            return [ true, env ];
+            return [true, env];
 
         if (expr === 'false')
-            return [ false, env ];
+            return [false, env];
 
         if (expr === 'null')
-            return [ null, env ];
+            return [null, env];
 
-        return [ env[expr], env ];
+        return [env[expr], env];
     }
 
     var fn = expr[0];
@@ -34,36 +34,35 @@ function evaluate(expr, env) {
         var r = evaluate(args[1], env);
         env = r[1];
         env[args[0]] = r[0];
-        return [ null, env ];
+        return [null, env];
     }
-	
-	if (fn === 'list') {
-		args = args.map(function(arg) {
-			return evaluate(arg, env).shift();
-		});
-		return [ args, env ];
-	}
+
+    if (fn === 'list')
+        return [args.map(function(arg) {
+            return evaluate(arg, env).shift();
+        }), env];
 
     if (fn === 'lambda') {
         var lArgs = args[0];
         var code = args[1];
-        return [ [ 'closure', lArgs, code, env ], env ];
+        return [['closure', lArgs, code, env], env];
     }
 
     if (fn === 'if') {
         var cond = evaluate(args[0], env).shift();
         if (cond === true)
-            return [ evaluate(args[1], env), env ];
+            return [evaluate(args[1], env), env];
 
-        return [ evaluate(args[2], env), env ];
+        return [evaluate(args[2], env), env];
     }
 
-    fn = evaluate(fn, env).shift();
-    args = args.map(function(arg) {
-        return evaluate(arg, env).shift();
-    });
-
-    return apply(fn, args, env);
+    return apply(
+        evaluate(fn, env).shift(),
+        args.map(function(arg) {
+            return evaluate(arg, env).shift();
+        }),
+        env
+    );
 };
 
 function merge(t, o) {
@@ -85,31 +84,30 @@ function combine(keys, values) {
 };
 
 function apply(fn, args, env) {
-    // fn[0] must be equal to 'closure', but not sure tho
     var lArgs = fn[1];
     var code = fn[2];
     var cEnv = fn[3];
 
-    if (typeof(code) === 'function')
-        return code.apply(null, [ args, env ]);
+    if (typeof (code) === 'function')
+        return code.apply(null, [args, env]);
 
     return evaluateCode(code, merge(combine(lArgs, args), merge(env, cEnv)));
 };
 
 function evaluateCode(code, env, multipleResults) {
     env = env || {};
-	multipleResults = multipleResults || false;
+    multipleResults = multipleResults || false;
     var results = [];
     code.forEach(function(codeInstruction) {
         var r = evaluate(codeInstruction, env);
-		results.push(r[0]);
+        results.push(r[0]);
         env = r[1];
     });
 
-	if (multipleResults)
-		return results;
-		
-	return results[results.length - 1];
+    if (multipleResults)
+        return results;
+
+    return results[results.length - 1];
 };
 
 function closure(fn) {
@@ -124,12 +122,13 @@ function closure(fn) {
         },
         []
     ];
-};
+}
+;
 
 var env = {};
 env['<'] = closure(function(a, b) { return a < b; });
-env['='] = closure(function(a, b) { return a == b; });
-env['!='] = closure(function(a, b) { return a != b; });
+env['='] = closure(function(a, b) { return a === b; });
+env['!='] = closure(function(a, b) { return a !== b; });
 env['<='] = closure(function(a, b) { return a <= b; });
 env['!'] = closure(function(a) { return !a; });
 env['>'] = closure(function(a, b) { return a > b; });
@@ -171,40 +170,40 @@ var fib = [
 
 var parenthesize = function(input, list) {
     if (list === undefined) {
-      return parenthesize(input, []);
+        return parenthesize(input, []);
     } else {
-      var token = input.shift();
-      if (token === undefined) {
-        return list;
-      } else if (token === "(") {
-        list.push(parenthesize(input, []));
-        return parenthesize(input, list);
-      } else if (token === ")") {
-        return list;
-      } else {
-        return parenthesize(input, list.concat(token));
-      }
+        var token = input.shift();
+        if (token === undefined) {
+            return list;
+        } else if (token === "(") {
+            list.push(parenthesize(input, []));
+            return parenthesize(input, list);
+        } else if (token === ")") {
+            return list;
+        } else {
+            return parenthesize(input, list.concat(token));
+        }
     }
-  };
+};
 
-  var tokenize = function(input) {
+var tokenize = function(input) {
     return input.split('"')
-                .map(function(x, i) {
-                   if (i % 2 === 0) { // not in string
-                     return x.replace(/\(/g, ' ( ')
-                             .replace(/\)/g, ' ) ');
-                   } else { // in string
-                     return x.replace(/ /g, "!whitespace!");
-                   }
-                 })
-                .join('"')
-                .trim()
-                .split(/\s+/)
-                .map(function(x) {
-                  return x.replace(/!whitespace!/g, " ");
-                });
-  };
+            .map(function(x, i) {
+                if (i % 2 === 0) { // not in string
+                    return x.replace(/\(/g, ' ( ')
+                            .replace(/\)/g, ' ) ');
+                } else { // in string
+                    return x.replace(/ /g, "!whitespace!");
+                }
+            })
+            .join('"')
+            .trim()
+            .split(/\s+/)
+            .map(function(x) {
+                return x.replace(/!whitespace!/g, " ");
+            });
+};
 
-  var parse = function(input) {
+var parse = function(input) {
     return parenthesize(tokenize(input));
-  };
+};
