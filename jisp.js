@@ -1,3 +1,7 @@
+Array.prototype.toString = function() {
+	return '(' + this.join(' ') + ')';
+};
+
 function pushEnv(env) {
     var newEnv = function() {};
     newEnv.prototype = env;
@@ -32,6 +36,13 @@ function evaluate(expr, env) {
         env[args[0]] = r[0];
         return [ null, env ];
     }
+	
+	if (fn === 'list') {
+		args = args.map(function(arg) {
+			return evaluate(arg, env).shift();
+		});
+		return [ args, env ];
+	}
 
     if (fn === 'lambda') {
         var lArgs = args[0];
@@ -47,12 +58,12 @@ function evaluate(expr, env) {
         return [ evaluate(args[2], env), env ];
     }
 
-    var ffn = evaluate(fn, env).shift();
+    fn = evaluate(fn, env).shift();
     args = args.map(function(arg) {
         return evaluate(arg, env).shift();
     });
 
-    return apply(ffn, args, env);
+    return apply(fn, args, env);
 };
 
 function merge(t, o) {
@@ -85,16 +96,20 @@ function apply(fn, args, env) {
     return evaluateCode(code, merge(combine(lArgs, args), merge(env, cEnv)));
 };
 
-function evaluateCode(code, env) {
+function evaluateCode(code, env, multipleResults) {
     env = env || {};
-    var result = undefined;
+	multipleResults = multipleResults || false;
+    var results = [];
     code.forEach(function(codeInstruction) {
         var r = evaluate(codeInstruction, env);
-        result = r[0];
+		results.push(r[0]);
         env = r[1];
     });
 
-    return result;
+	if (multipleResults)
+		return results;
+		
+	return results[results.length - 1];
 };
 
 function closure(fn) {
@@ -113,8 +128,18 @@ function closure(fn) {
 
 var env = {};
 env['<'] = closure(function(a, b) { return a < b; });
-env['+'] = closure(function(a, b) { return a + b; });
-env['-'] = closure(function(a, b) { return a - b; });
+env['='] = closure(function(a, b) { return a == b; });
+env['!='] = closure(function(a, b) { return a != b; });
+env['<='] = closure(function(a, b) { return a <= b; });
+env['!'] = closure(function(a) { return !a; });
+env['>'] = closure(function(a, b) { return a > b; });
+env['>='] = closure(function(a, b) { return a >= b; });
+env['+'] = closure(function(a, b) { if (b === undefined) return +a; return a + b; });
+env['-'] = closure(function(a, b) { if (b === undefined) return -a; return a - b; });
+env['/'] = closure(function(a, b) { return a / b; });
+env['*'] = closure(function(a, b) { return a * b; });
+env['car'] = closure(function(list) { return list.length > 0 ? list[0] : null; });
+env['cdr'] = closure(function(list) { return list.length > 1 ? list.slice(1) : null; });
 
 /*
 var fib = [

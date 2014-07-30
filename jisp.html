@@ -14,7 +14,19 @@
     ))
 ))
 (fib 12)
-)</textarea>
+(cdr (list 1 (+ 2 3)))
+(list 1 2)
+(car (list 1 2 3))
+(cdr (list 1 2 3))
+(define factorial (lambda n
+  ((if (= n 1)
+      1
+      (* n (factorial (- n 1)))
+  ))
+))
+(factorial 15)
+
+</textarea>
 <br>
 	<button id="evaluate" onclick="eval();">Evaluate !</button>
 	<br>
@@ -26,7 +38,7 @@
 	function eval() {
 	var start = new Date();
 		try {
-			document.getElementById('results').value = evaluateCode(parenthesize(tokenize(document.getElementById('code').value)), env);
+			document.getElementById('results').value = evaluateCode(parenthesize(tokenize(document.getElementById('code').value)), env, true).map(function(result) { if (result === null) return 'nil'; return result; }).join("\n");
 		} catch (e) { document.getElementById('results').value = e.toString(); }
 		var end = new Date();
 		document.getElementById('time').value = "Executed in: " + (end.getTime() - start.getTime()) + "ms";
