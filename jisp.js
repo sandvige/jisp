@@ -140,6 +140,8 @@ env['/'] = closure(function(a, b) { return a / b; });
 env['*'] = closure(function(a, b) { return a * b; });
 env['car'] = closure(function(list) { return list.length > 0 ? list[0] : null; });
 env['cdr'] = closure(function(list) { return list.length > 1 ? list.slice(1) : null; });
+env['^'] = closure(function(a, b) { return Math.pow(a, b); });
+env['exp'] = closure(function(a) { return Math.exp(a); });
 
 /*
 var fib = [
