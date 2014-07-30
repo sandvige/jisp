@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <title>Jisp interpreter</title>
+  </head>
+  <body>
+    <textarea rows="20" cols="50" id="code">
+(define fib (lambda n
+    ((if (< n 2)
+        n
+        (+
+            (fib (- n 1))
+            (fib (- n 2))
+        )
+    ))
+))
+(fib 12)
+)</textarea>
+<br>
+	<button id="evaluate" onclick="eval();">Evaluate !</button>
+	<br>
+	<textarea rows="20" cols="50" id="results"></textarea>
+	<br>
+	<textarea rows="2" cols="50" id="time"></textarea>
+    <script src="jisp.js"></script>
+	<script>
+	function eval() {
+	var start = new Date();
+		try {
+			document.getElementById('results').value = evaluateCode(parenthesize(tokenize(document.getElementById('code').value)), env);
+		} catch (e) { document.getElementById('results').value = e.toString(); }
+		var end = new Date();
+		document.getElementById('time').value = "Executed in: " + (end.getTime() - start.getTime()) + "ms";
+	};
+	</script>
+  </body>
+</html>

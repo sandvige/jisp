@@ -1,4 +1,4 @@
 jisp
 ====
 
-Another LISP interpreter written in jS
+Yet another LISP interpreter written in JS
