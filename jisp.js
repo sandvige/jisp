@@ -95,7 +95,6 @@ function apply(fn, args, env) {
 };
 
 function evaluateCode(code, env, multipleResults) {
-    env = env || {};
     multipleResults = multipleResults || false;
     var results = [];
     code.forEach(function(codeInstruction) {
@@ -122,13 +121,12 @@ function closure(fn) {
         },
         []
     ];
-}
-;
+};
 
 var env = {};
 env['<'] = closure(function(a, b) { return a < b; });
 env['='] = closure(function(a, b) { return a === b; });
-env['!='] = closure(function(a, b) { return a !== b; });
+env['<>'] = closure(function(a, b) { return a !== b; });
 env['<='] = closure(function(a, b) { return a <= b; });
 env['!'] = closure(function(a) { return !a; });
 env['>'] = closure(function(a, b) { return a > b; });
